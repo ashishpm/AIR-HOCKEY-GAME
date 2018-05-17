@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> SMASH IT! </title>
+<style>
+ canvas {
+ background-color : black;
+ border : 2px red solid;
+ }
+</style>
+</head>
+<body onload = "startGame()">
+<script>
+
+var score1 =0;
+var score2 =0;
+
+function startGame(){
+
+ myGameArea.start();
+ interval = setInterval(updateGameArea,10);
+ myBat = new component1(50,50,"white",10,170);
+ compBat = new component1(1490,50,"white",10,170);
+ myscore = new component1("30px","arial","white",370,50,"text");
+ compscore = new component1("30px","arial","white",1120,50,"text");
+ myBall = new component2(100,200,15,"white");
+}
+
+var myGameArea = {
+
+ canvas: document.createElement("canvas"),
+ start: function(){
+   this.canvas.width = 1500;
+   this.canvas.height = 700;
+   this.context = this.canvas.getContext("2d");
+   document.body.insertBefore(this.canvas,document.body.childNodes[0]);
+ },
+ clear: function(){
+   this.context.clearRect(0,0,1600,700);
+ },
+ update : function(){
+   ctx = this.context;
+   ctx.fillStyle = "white";
+   for(i=0;i<7;i++){
+     ctx.fillRect(750,i*100,5,50);
+   }
+ }
+ 
+}
+
+function component1(x,y,color,width,height,type){
+
+  this.type = type;
+  this.x = x;
+  this.y = y;
+  this.color = color;
+  this.width = width;
+  this.height = height;
+
+  this.update = function(){
+    ctx = myGameArea.context;
+    if(this.type == "text"){
+     ctx.font = this.x +" "+this.y;
+     ctx.fillStyle = this.color;
+     if(this.width == 370){
+       ctx.fillText(score1,this.width,this.height);
+	 }
+     else{
+	  ctx.fillText(score2,this.width,this.height);
+	 }
+    }
+    else{
+     ctx.fillStyle = this.color;
+     ctx.fillRect(this.x,this.y,this.width,this.height);
+	}
+   }
+
+   this.newPos = function(){
+      if(this.x + this.width>750){this.x = 740;}
+   }
+
+}
+
+function component2(x,y,radius,color){
+
+ this.x = x;
+ this.y = y;
+ this.color = color;
+ this.radius = radius;
+ this.sx = 9;
+ this.sy = 9;
+
+ this.update = function(){
+  ctx = myGameArea.context;
+  ctx.beginPath();
+  ctx.arc(this.x,this.y,this.radius,0,2*Math.PI);
+  ctx.fillStyle = this.color;
+  ctx.fill();
+ }
+
+ this.newPos = function(){
+  this.x += this.sx;
+  this.y += this.sy;
+  if(this.y>700){
+   this.y =700;
+   this.sy = -9; 
+  }
+  if(this.y<0){
+   this.y =0;
+   this.sy = 9; 
+  }
+ }
+
+}
+
+function checkmyBat(){
+
+ var tl = myBat.x;
+ var lr = myBall.x + myBall.radius;
+ var tr = myBat.x + myBat.width;
+ var ll = myBall.x - myBall.radius;
+ var tt = myBat.y;
+ var tb = myBat.y + myBat.height;
+ var lt = myBall.y - myBall.radius;
+ var lb = myBall.y + myBall.radius;
+
+ if((ll>tl && ll<=tr) && (lt>=tt && lb<=tb)){
+   myBall.sx = 9;
+ }
+
+}
+
+function checkcompBat(){
+
+ var tl = compBat.x;
+ var lr = myBall.x + myBall.radius;
+ var tr = compBat.x + compBat.width;
+ var ll = myBall.x - myBall.radius;
+ var tt = compBat.y;
+ var tb = compBat.y + compBat.height;
+ var lt = myBall.y - myBall.radius;
+ var lb = myBall.y + myBall.radius;
+
+ if((lr>=tl && lr<tr) && (lt>=tt && lb<=tb)){
+  myBall.sx = -9;
+ }
+
+}
+
+function compmove(){
+
+ var c = compBat.y + compBat.height/2;
+ if(c < myBall.y-35){
+   compBat.y += 6;
+ }
+ if(c>myBall.y + 35){
+   compBat.y -= 6;
+ }
+}
+
+function result(){
+
+ ctx = myGameArea.context;
+ ctx.font = "60px arial";
+ ctx.fillStyle = "white";
+ if(score1 == 5){
+   ctx.fillText("YOU WON THE MATCH",400,350);
+   ctx.fillText("Click to restart",450,440);
+ }
+ else{
+   ctx.fillText("YOU LOSE THE MATCH",400,350);
+   ctx.fillText("Click to restart",450,440);
+ }
+}
+
+function updateGameArea(){
+
+  myGameArea.clear(); 
+  myBall.newPos();
+  myBat.newPos();
+  compmove();
+  checkmyBat();
+  checkcompBat();
+  
+  if(myBall.x>1500){ 
+    score1 += 1;
+    clearInterval(interval);
+    if(score1 == 5){
+    result();return;
+    }
+    setTimeout(startGame,1000);
+  }
+  
+  if(myBall.x<0){
+    score2 += 1;
+    clearInterval(interval);
+    if(score2 == 5){
+    result();return;
+    }
+    setTimeout(startGame,1000);
+  }
+  
+   myGameArea.update();
+   myscore.update();
+   compscore.update();
+   myBall.update();
+   myBat.update();
+   compBat.update();
+}
+
+window.addEventListener("mousedown",function(){
+score1 = 0;
+score2 = 0;
+startGame();
+});
+window.addEventListener("mousemove",function(e){
+myBat.x = e.pageX - myBat.width/2;;
+myBat.y = e.pageY - myBat.height/2;
+});
+
+</script>
+</body>
+</html> 
